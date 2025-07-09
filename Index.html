@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Matrix Bitcoin Key</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+      font-family: monospace;
+      color: #0F0;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      display: block;
+    }
+
+    #message-box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 30px;
+      border: 2px solid #0F0;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      width: 90%;
+      max-width: 600px;
+      color: #0F0;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+
+    .red { color: #ff0033; animation: pulseRed 1.2s infinite; }
+    .orange { color: orange; animation: pulseOrange 1.2s infinite; }
+    .green { color: #0F0; animation: pulseGreen 1.2s infinite; }
+
+    @keyframes pulseGreen {
+      0%, 100% { text-shadow: 0 0 5px #0F0, 0 0 10px #0F0; }
+      50% { text-shadow: 0 0 15px #0F0, 0 0 30px #0F0; }
+    }
+
+    @keyframes pulseRed {
+      0%, 100% { text-shadow: 0 0 5px red, 0 0 10px red; }
+      50% { text-shadow: 0 0 15px red, 0 0 30px red; }
+    }
+
+    @keyframes pulseOrange {
+      0%, 100% { text-shadow: 0 0 5px orange, 0 0 10px orange; }
+      50% { text-shadow: 0 0 15px orange, 0 0 30px orange; }
+    }
+
+    #copyBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: black;
+      border: 2px solid #0F0;
+      color: #0F0;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    #copyBtn:hover {
+      background: #0F0;
+      color: black;
+    }
+
+    #explosionCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: none;
+      z-index: 20;
+    }
+
+    #bitcoin-img {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform-style: preserve-3d;
+      transform: translate(-50%, -50%) rotateY(0deg);
+      width: 150px;
+      z-index: 30;
+      display: none;
+      animation: rotateY 3s linear infinite;
+    }
+
+    @keyframes rotateY {
+      0% { transform: translate(-50%, -50%) rotateY(0deg); }
+      100% { transform: translate(-50%, -50%) rotateY(360deg); }
+    }
+
+    #visit-counter {
+      position: fixed;
+      bottom: 10px;
+      right: 15px;
+      color: #0F0;
+      font-size: 14px;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border: 1px solid #0F0;
+      border-radius: 5px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+<canvas id="explosionCanvas"></canvas>
+
+<div id="message-box">
+  <div id="typedText"></div>
+  <button id="copyBtn" style="display:none;">Copiar chave</button>
+</div>
+
+<img id="bitcoin-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/240px-Bitcoin.svg.png" alt="Bitcoin" />
+
+<div id="visit-counter">Visitas: Carregando...</div>
+
+<audio id="typeSound" src="https://www.soundjay.com/mechanical/sounds/mechanical-keyboard-single-1.mp3" preload="auto"></audio>
+
+<script>
+  // Contador de visitas
+  fetch("https://api.countapi.xyz/hit/matrix-bitcoin-key/visits")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("visit-counter").innerText = "Visitas: " + data.value;
+    });
+
+  // Matrix binária
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const fontSize = 16;
+  let columns = Math.floor(canvas.width / fontSize);
+  let drops = Array(columns).fill(0);
+  const lettersArr = '01'.split('');
+  let repel = null;
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#0F0';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      let x = i * fontSize;
+      let y = drops[i] * fontSize;
+
+      if (repel) {
+        const dx = x - repel.x;
+        const dy = y - repel.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 150) {
+          x += dx / distance * 5;
+          y += dy / distance * 5;
+        }
+      }
+
+      const text = lettersArr[Math.floor(Math.random() * lettersArr.length)];
+      ctx.fillText(text, x, y);
+
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+
+  setInterval(drawMatrix, 33);
+
+  canvas.addEventListener('click', (e) => {
+    repel = { x: e.clientX, y: e.clientY };
+    setTimeout(() => repel = null, 1000);
+  });
+
+  const messageParts = [
+    { text: "Parabéns por chegar até aqui.\n\n", class: "green" },
+    { text: "RECEBA SUA RECOMPENSA\n\n", class: "red" },
+    { text: "Esta é uma chave privada de uma carteira de bitcoin, recupere para você:\n\n", class: "green" },
+    { text: "L4mEiUUrw97kKZmDCNbaNmj4Y72rNnJoGiC6NQYqQheDNTMk2Nxh\n\n", class: "orange", isKey: true },
+    { text: "O início da sua jornada começou, salve o futuro financeiro da sua família.\n\n", class: "green" },
+    { text: "Estude e compre Bitcoin", class: "green" }
+  ];
+
+  const messageBox = document.getElementById('message-box');
+  const typedText = document.getElementById('typedText');
+  const typeSound = document.getElementById('typeSound');
+  const copyBtn = document.getElementById('copyBtn');
+  const explosionCanvas = document.getElementById('explosionCanvas');
+  const explosionCtx = explosionCanvas.getContext('2d');
+  const bitcoinImg = document.getElementById('bitcoin-img');
+
+  let currentSpan;
+  let partIndex = 0;
+  let charIndex = 0;
+
+  setTimeout(() => {
+    messageBox.style.display = 'block';
+    typeNextChar();
+  }, 1000);
+
+  function typeNextChar() {
+    if (partIndex >= messageParts.length) return;
+
+    const part = messageParts[partIndex];
+    if (!currentSpan) {
+      currentSpan = document.createElement('span');
+      currentSpan.className = part.class;
+      typedText.appendChild(currentSpan);
+    }
+
+    const char = part.text.charAt(charIndex);
+    currentSpan.textContent += char;
+
+    if (char !== '\n' && char !== ' ') {
+      typeSound.currentTime = 0;
+      typeSound.play();
+    }
+
+    charIndex++;
+
+    if (charIndex < part.text.length) {
+      setTimeout(typeNextChar, 55);
+    } else {
+      if (part.isKey) {
+        copyBtn.style.display = 'inline-block';
+        copyBtn.dataset.key = part.text.trim();
+      }
+      partIndex++;
+      charIndex = 0;
+      currentSpan = null;
+      setTimeout(typeNextChar, 300);
+    }
+  }
+
+  copyBtn.addEventListener('click', () => {
+    const key = copyBtn.dataset.key;
+    navigator.clipboard.writeText(key).then(() => {
+      explodeEffect();
+    });
+  });
+
+  function explodeEffect() {
+    messageBox.remove();
+    explosionCanvas.width = window.innerWidth;
+    explosionCanvas.height = window.innerHeight;
+    explosionCanvas.style.display = 'block';
+
+    const particles = [];
+    const chars = '01';
+    for (let i = 0; i < 300; i++) {
+      particles.push({
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        vx: (Math.random() - 0.5) * 10,
+        vy: (Math.random() - 0.5) * 10,
+        text: chars[Math.floor(Math.random() * chars.length)],
+        alpha: 1
+      });
+    }
+
+    let frame = 0;
+    const maxFrames = 60;
+
+    function animate() {
+      frame++;
+      explosionCtx.clearRect(0, 0, explosionCanvas.width, explosionCanvas.height);
+      explosionCtx.font = '20px monospace';
+      for (let p of particles) {
+        explosionCtx.fillStyle = `rgba(0, 255, 0, ${p.alpha})`;
+        explosionCtx.fillText(p.text, p.x, p.y);
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.01;
+      }
+      if (frame < maxFrames) {
+        requestAnimationFrame(animate);
+      } else {
+        explosionCanvas.style.display = 'none';
+        bitcoinImg.style.display = 'block';
+      }
+    }
+
+    animate();
+  }
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    columns = Math.floor(canvas.width / fontSize);
+    drops = Array(columns).fill(0);
+  });
+</script>
+
+</body>
+</html>
