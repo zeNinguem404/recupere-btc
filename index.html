@@ -75,14 +75,6 @@
       color: black;
     }
 
-    #explosionCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      display: none;
-      z-index: 20;
-    }
-
     #bitcoin-img {
       position: fixed;
       top: 50%;
@@ -118,8 +110,6 @@
 <body>
 
 <canvas id="matrix"></canvas>
-<canvas id="explosionCanvas"></canvas>
-
 <div id="message-box">
   <div id="typedText"></div>
   <button id="copyBtn" style="display:none;">Copiar chave</button>
@@ -127,9 +117,10 @@
 
 <img id="bitcoin-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/240px-Bitcoin.svg.png" alt="Bitcoin" />
 
-<div id="visit-counter">Visitas: Carregando...</div>
-
 <audio id="typeSound" src="https://www.soundjay.com/mechanical/sounds/mechanical-keyboard-single-1.mp3" preload="auto"></audio>
+<audio id="narration" src="narracao_com_suspense.mp3" preload="auto"></audio>
+
+<div id="visit-counter">Visitas: Carregando...</div>
 
 <script>
   // Contador de visitas
@@ -139,17 +130,15 @@
       document.getElementById("visit-counter").innerText = "Visitas: " + data.value;
     });
 
-  // Matrix binária
+  // Matrix
   const canvas = document.getElementById('matrix');
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-
   const fontSize = 16;
   let columns = Math.floor(canvas.width / fontSize);
   let drops = Array(columns).fill(0);
   const lettersArr = '01'.split('');
-  let repel = null;
 
   function drawMatrix() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
@@ -158,33 +147,18 @@
     ctx.font = fontSize + 'px monospace';
 
     for (let i = 0; i < drops.length; i++) {
+      let text = lettersArr[Math.floor(Math.random() * lettersArr.length)];
       let x = i * fontSize;
       let y = drops[i] * fontSize;
 
-      if (repel) {
-        const dx = x - repel.x;
-        const dy = y - repel.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < 150) {
-          x += dx / distance * 5;
-          y += dy / distance * 5;
-        }
-      }
-
-      const text = lettersArr[Math.floor(Math.random() * lettersArr.length)];
       ctx.fillText(text, x, y);
 
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
       drops[i]++;
     }
   }
 
   setInterval(drawMatrix, 33);
-
-  canvas.addEventListener('click', (e) => {
-    repel = { x: e.clientX, y: e.clientY };
-    setTimeout(() => repel = null, 1000);
-  });
 
   const messageParts = [
     { text: "Parabéns por chegar até aqui.\n\n", class: "green" },
@@ -195,20 +169,17 @@
     { text: "Estude e compre Bitcoin", class: "green" }
   ];
 
-  const messageBox = document.getElementById('message-box');
   const typedText = document.getElementById('typedText');
   const typeSound = document.getElementById('typeSound');
+  const narration = document.getElementById('narration');
   const copyBtn = document.getElementById('copyBtn');
-  const explosionCanvas = document.getElementById('explosionCanvas');
-  const explosionCtx = explosionCanvas.getContext('2d');
   const bitcoinImg = document.getElementById('bitcoin-img');
 
-  let currentSpan;
   let partIndex = 0;
   let charIndex = 0;
+  let currentSpan;
 
   setTimeout(() => {
-    messageBox.style.display = 'block';
     typeNextChar();
   }, 1000);
 
@@ -249,52 +220,17 @@
   copyBtn.addEventListener('click', () => {
     const key = copyBtn.dataset.key;
     navigator.clipboard.writeText(key).then(() => {
+      if (narration) {
+        narration.currentTime = 0;
+        narration.play();
+      }
       explodeEffect();
     });
   });
 
   function explodeEffect() {
-    messageBox.remove();
-    explosionCanvas.width = window.innerWidth;
-    explosionCanvas.height = window.innerHeight;
-    explosionCanvas.style.display = 'block';
-
-    const particles = [];
-    const chars = '01';
-    for (let i = 0; i < 300; i++) {
-      particles.push({
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-        vx: (Math.random() - 0.5) * 10,
-        vy: (Math.random() - 0.5) * 10,
-        text: chars[Math.floor(Math.random() * chars.length)],
-        alpha: 1
-      });
-    }
-
-    let frame = 0;
-    const maxFrames = 60;
-
-    function animate() {
-      frame++;
-      explosionCtx.clearRect(0, 0, explosionCanvas.width, explosionCanvas.height);
-      explosionCtx.font = '20px monospace';
-      for (let p of particles) {
-        explosionCtx.fillStyle = `rgba(0, 255, 0, ${p.alpha})`;
-        explosionCtx.fillText(p.text, p.x, p.y);
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.01;
-      }
-      if (frame < maxFrames) {
-        requestAnimationFrame(animate);
-      } else {
-        explosionCanvas.style.display = 'none';
-        bitcoinImg.style.display = 'block';
-      }
-    }
-
-    animate();
+    document.getElementById("message-box").remove();
+    bitcoinImg.style.display = 'block';
   }
 
   window.addEventListener('resize', () => {
