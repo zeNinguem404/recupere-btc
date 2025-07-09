@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Matrix Bitcoin Key</title>
+  <title>Chave Bitcoin - Matrix</title>
   <style>
     html, body {
       margin: 0;
@@ -28,19 +28,17 @@
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       padding: 30px;
       border: 2px solid #0F0;
       border-radius: 10px;
       font-size: 1.2rem;
-      width: 90%;
       max-width: 600px;
       color: #0F0;
       white-space: pre-wrap;
-      text-align: left;
     }
 
-    .red { color: #ff0033; animation: pulseRed 1.2s infinite; }
+    .red { color: #ff0033; animation: pulseRed 1.2s infinite; text-transform: uppercase; }
     .orange { color: orange; animation: pulseOrange 1.2s infinite; }
     .green { color: #0F0; animation: pulseGreen 1.2s infinite; }
 
@@ -48,12 +46,10 @@
       0%, 100% { text-shadow: 0 0 5px #0F0, 0 0 10px #0F0; }
       50% { text-shadow: 0 0 15px #0F0, 0 0 30px #0F0; }
     }
-
     @keyframes pulseRed {
       0%, 100% { text-shadow: 0 0 5px red, 0 0 10px red; }
       50% { text-shadow: 0 0 15px red, 0 0 30px red; }
     }
-
     @keyframes pulseOrange {
       0%, 100% { text-shadow: 0 0 5px orange, 0 0 10px orange; }
       50% { text-shadow: 0 0 15px orange, 0 0 30px orange; }
@@ -103,13 +99,13 @@
       padding: 5px 10px;
       border: 1px solid #0F0;
       border-radius: 5px;
-      font-family: monospace;
     }
   </style>
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
+
 <div id="message-box">
   <div id="typedText"></div>
   <button id="copyBtn" style="display:none;">Copiar chave</button>
@@ -124,7 +120,7 @@
 
 <script>
   // Contador de visitas
-  fetch("https://api.countapi.xyz/hit/matrix-bitcoin-key/visits")
+  fetch("https://api.countapi.xyz/hit/matrix-bitcoin-site/visits")
     .then(res => res.json())
     .then(data => {
       document.getElementById("visit-counter").innerText = "Visitas: " + data.value;
@@ -220,10 +216,8 @@
   copyBtn.addEventListener('click', () => {
     const key = copyBtn.dataset.key;
     navigator.clipboard.writeText(key).then(() => {
-      if (narration) {
-        narration.currentTime = 0;
-        narration.play();
-      }
+      narration.currentTime = 0;
+      narration.play();
       explodeEffect();
     });
   });
